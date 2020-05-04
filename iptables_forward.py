@@ -112,10 +112,6 @@ def add_forward():
         else:
             forward_type = raw_input('输入错误!!!\n请再次输入数字 来选择 iptables 转发类型(默认TCP+UDP):\n1.TCP\n2.UDP\n3.TCP+UDP\n') or '3'
     choice = raw_input('是否需要继续添加y/n(默认y):') or 'y'
-    if choice == 'y':
-        add_forward()
-    else:
-        restart_program()
     # 开启防火墙的ipv4转发
     os.system('echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf')
     os.system('sysctl -p')
@@ -124,9 +120,11 @@ def add_forward():
         os.system('service iptables save&&chkconfig --level 2345 iptables on')
     else:
         os.system(
-                'iptables-save > /etc/iptables.up.rules&&echo -e ''#''!/bin/bash\\n/sbin/iptables-restore < /etc/iptables.up.rules'' > /etc/network/if-pre-up.d/iptables&&chmod +x /etc/network/if-pre-up.d/iptables')
-
-
+            'iptables-save > /etc/iptables.up.rules&&echo -e ''#''!/bin/bash\\n/sbin/iptables-restore < /etc/iptables.up.rules'' > /etc/network/if-pre-up.d/iptables&&chmod +x /etc/network/if-pre-up.d/iptables')
+    if choice == 'y':
+        add_forward()
+    else:
+        restart_program()
 # 清空iptables端口转发
 def del_all_forwarding():
     num = commands.getstatusoutput('iptables -t nat -vnL POSTROUTING')
