@@ -114,17 +114,18 @@ def add_forward():
     choice = raw_input('是否需要继续添加y/n(默认y):') or 'y'
     if choice == 'y':
         add_forward()
-        # 开启防火墙的ipv4转发
-        os.system('echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf')
-        os.system('sysctl -p')
-        # 配置iptables开机加载
-        if sys == 'centos':
-            os.system('service iptables save&&chkconfig --level 2345 iptables on')
-        else:
-            os.system(
-                'iptables-save > /etc/iptables.up.rules&&echo -e ''#''!/bin/bash\\n/sbin/iptables-restore < /etc/iptables.up.rules'' > /etc/network/if-pre-up.d/iptables&&chmod +x /etc/network/if-pre-up.d/iptables')
     else:
         restart_program()
+    # 开启防火墙的ipv4转发
+    os.system('echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf')
+    os.system('sysctl -p')
+    # 配置iptables开机加载
+    if sys == 'centos':
+        os.system('service iptables save&&chkconfig --level 2345 iptables on')
+    else:
+        os.system(
+                'iptables-save > /etc/iptables.up.rules&&echo -e ''#''!/bin/bash\\n/sbin/iptables-restore < /etc/iptables.up.rules'' > /etc/network/if-pre-up.d/iptables&&chmod +x /etc/network/if-pre-up.d/iptables')
+
 
 # 清空iptables端口转发
 def del_all_forwarding():
