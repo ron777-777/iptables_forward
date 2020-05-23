@@ -47,7 +47,7 @@ def run():
     os.system('sysctl -p')
     # 配置iptables开机加载
     if sys == 'centos':
-        os.system('service iptables save&&chkconfig --level 2345 iptables on')
+        os.system('systemctl iptables save&&chkconfig --level 2345 iptables on')
     else:
         os.system(
             'iptables-save > /etc/iptables.up.rules&&echo -e ''#''!/bin/bash\\n/sbin/iptables-restore < /etc/iptables.up.rules'' > /etc/network/if-pre-up.d/iptables&&chmod +x /etc/network/if-pre-up.d/iptables')
