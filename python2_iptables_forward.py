@@ -39,7 +39,7 @@ def check_sys():
 
 # 重新运行程序
 def restart_program():
-    os.system('python iptables_forward.py')
+    os.system('python2 python2_iptables_forward.py')
 
 def run():
     # 开启防火墙的ipv4转发
