@@ -1,36 +1,36 @@
 # coding=utf-8
 import os
-import commands
+import subprocess  # 替换 commands 为 subprocess
 import socket
 
 # 检查当前系统
 def check_sys():
     global sys
-    value = commands.getstatusoutput('cat /etc/redhat-release | grep -q -E -i "centos"')
+    value = subprocess.getstatusoutput('cat /etc/redhat-release | grep -q -E -i "centos"')  # 使用 subprocess
     if value[0] == 0:
         sys = 'centos'
     else:
-        value = commands.getstatusoutput('cat / etc / issue | grep - q - E - i "debian"')
+        value = subprocess.getstatusoutput('cat /etc/issue | grep -q -E -i "debian"')  # 修复空格问题
         if value[0] == 0:
             sys = 'debian'
         else:
-            value = commands.getstatusoutput('cat /etc/issue | grep -q -E -i "ubuntu"')
+            value = subprocess.getstatusoutput('cat /etc/issue | grep -q -E -i "ubuntu"')
             if value[0] == 0:
                 sys = 'ubuntu'
             else:
-                value = commands.getstatusoutput('cat /etc/issue | grep -q -E -i "centos|red hat|redhat"')
+                value = subprocess.getstatusoutput('cat /etc/issue | grep -q -E -i "centos|red hat|redhat"')
                 if value[0] == 0:
                     sys = 'centos'
                 else:
-                    value = commands.getstatusoutput('cat /proc/version | grep -q -E -i "debian"')
+                    value = subprocess.getstatusoutput('cat /proc/version | grep -q -E -i "debian"')
                     if value[0] == 0:
                         sys = 'debian'
                     else:
-                        value = commands.getstatusoutput('cat /proc/version | grep -q -E -i "ubuntu"')
+                        value = subprocess.getstatusoutput('cat /proc/version | grep -q -E -i "ubuntu"')
                         if value[0] == 0:
                             sys = 'ubuntu'
                         else:
-                            value == commands.getstatusoutput('cat /proc/version | grep -q -E -i "centos|red hat|redhat"')
+                            value = subprocess.getstatusoutput('cat /proc/version | grep -q -E -i "centos|red hat|redhat"')  # 修复 == 为 =
                             if value[0] == 0:
                                 sys = 'centos'
                             else:
@@ -39,7 +39,7 @@ def check_sys():
 
 # 重新运行程序
 def restart_program():
-    os.system('python iptables_forward.py')
+    os.system('python3 python3_iptables_forward.py')  # 使用 python3
 
 def run():
     # 开启防火墙的ipv4转发
@@ -54,7 +54,7 @@ def run():
 
 # 安装iptables
 def install_iptables():
-    status = commands.getstatusoutput('iptables -V')
+    status = subprocess.getstatusoutput('iptables -V')  # 使用 subprocess
     if status[1] != '':
         print('已安装iptables')
         input('按任意键继续')
@@ -65,7 +65,7 @@ def install_iptables():
             os.system('yum update&&yum install -y iptables')
         else:
             os.system('apt-get update&&apt-get install -y iptables')
-        status = commands.getstatusoutput('iptables -V')
+        status = subprocess.getstatusoutput('iptables -V')  # 使用 subprocess
         if status[1] != '':
             print('已完成安装iptables')
             input('按任意键继续')
@@ -130,7 +130,7 @@ def add_forward():
         restart_program()
 # 清空iptables端口转发
 def del_all_forwarding():
-    num = commands.getstatusoutput('iptables -t nat -vnL POSTROUTING')
+    num = subprocess.getstatusoutput('iptables -t nat -vnL POSTROUTING')  # 使用 subprocess
     all_num = num[1].count('*')/2
     a = 0
     while a < all_num:
@@ -147,13 +147,13 @@ def del_all_forwarding():
 
 # 查看iptables端口转发
 def view_forwarding():
-    show = commands.getoutput('iptables -t nat -vnL POSTROUTING')
+    show = subprocess.getoutput('iptables -t nat -vnL POSTROUTING')  # 使用 subprocess
     print(show+'\n以上是你现有的规则')
     input('按任意键回到主菜单')
     restart_program()
 #删除iptables端口转发
 def del_forwarding():
-    show = commands.getoutput('iptables -t nat -vnL POSTROUTING')
+    show = subprocess.getoutput('iptables -t nat -vnL POSTROUTING')  # 使用 subprocess
     print(show + '\n以上是你现有的规则')
     input('按任意键继续')
     if show == 'Chain POSTROUTING (policy ACCEPT 460 packets, 28030 bytes)\npkts bytes target prot opt in out source destination':
@@ -161,7 +161,7 @@ def del_forwarding():
         restart_program()
     else:
         no = input('你想删除的规则序号(如1,2,3,4):')
-        output = commands.getoutput('iptables -t nat -D POSTROUTING '+no+'&&iptables -t nat -D PREROUTING '+no)
+        output = subprocess.getoutput('iptables -t nat -D POSTROUTING '+no+'&&iptables -t nat -D PREROUTING '+no)  # 使用 subprocess
         if output == 'iptables: Bad rule (does a matching rule exist in that chain?).':
             input('你还没有添加规则或是没有输入序号,按任意键回到主菜单')
             restart_program()
