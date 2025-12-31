@@ -42,16 +42,16 @@ def restart_program():
     os.system('python3 python3_iptables_forward.py')  # 使用 python3
 
 def run():
-    # 开启防火墙的ipv4转发
-    os.system('echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf')
+    print("正在永久开启内核 IPv4 转发...")
+    # 先检查是否已经存在该配置，存在则修改，不存在则追加
+    os.system("sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.conf") 
+    os.system('echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf')
+    # 立即应用
     os.system('sysctl -p')
-    # 配置iptables开机加载
-    if sys == 'centos':
-        os.system('service iptables save&&chkconfig --level 2345 iptables on')
-    else:
-        os.system(
-            'iptables-save > /etc/iptables.up.rules&&echo -e ''#''!/bin/bash\\n/sbin/iptables-restore < /etc/iptables.up.rules'' > /etc/network/if-pre-up.d/iptables&&chmod +x /etc/network/if-pre-up.d/iptables')
-
+    # 针对阿里云等系统，额外执行一次临时生效命令，确保双保险
+    os.system('echo 1 > /proc/sys/net/ipv4/ip_forward')
+    print("已永久开启内核 IPv4 转发")
+    
 # 安装iptables
 def install_iptables():
     status = subprocess.getstatusoutput('iptables -V')  # 使用 subprocess
