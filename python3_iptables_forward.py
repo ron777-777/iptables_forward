@@ -1,16 +1,22 @@
 # coding=utf-8
 import os
-import subprocess  # 替换 commands 为 subprocess
+import subprocess
 import socket
+import platform
 
-# 检查当前系统
+# 检查当前系统类型
 def check_sys():
     global sys
-    value = subprocess.getstatusoutput('cat /etc/redhat-release | grep -q -E -i "centos"')  # 使用 subprocess
+    # 先检查是否是Windows系统
+    if platform.system() == 'Windows':
+        print('此脚本为Linux系统专用，不支持Windows系统！')
+        os._exit(0)
+    
+    value = subprocess.getstatusoutput('cat /etc/redhat-release | grep -q -E -i "centos"')
     if value[0] == 0:
         sys = 'centos'
     else:
-        value = subprocess.getstatusoutput('cat /etc/issue | grep -q -E -i "debian"')  # 修复空格问题
+        value = subprocess.getstatusoutput('cat /etc/issue | grep -q -E -i "debian"')
         if value[0] == 0:
             sys = 'debian'
         else:
@@ -30,7 +36,7 @@ def check_sys():
                         if value[0] == 0:
                             sys = 'ubuntu'
                         else:
-                            value = subprocess.getstatusoutput('cat /proc/version | grep -q -E -i "centos|red hat|redhat"')  # 修复 == 为 =
+                            value = subprocess.getstatusoutput('cat /proc/version | grep -q -E -i "centos|red hat|redhat"')
                             if value[0] == 0:
                                 sys = 'centos'
                             else:
@@ -39,7 +45,7 @@ def check_sys():
 
 # 重新运行程序
 def restart_program():
-    os.system('python3 python3_iptables_forward.py')  # 使用 python3
+    os.system('python3 python3_iptables_forward.py')
 
 def run():
     print("正在永久开启内核 IPv4 转发...")
@@ -51,10 +57,10 @@ def run():
     # 针对阿里云等系统，额外执行一次临时生效命令，确保双保险
     os.system('echo 1 > /proc/sys/net/ipv4/ip_forward')
     print("已永久开启内核 IPv4 转发")
-    
+
 # 安装iptables
 def install_iptables():
-    status = subprocess.getstatusoutput('iptables -V')  # 使用 subprocess
+    status = subprocess.getstatusoutput('iptables -V')
     if status[1] != '':
         print('已安装iptables')
         input('按任意键继续')
@@ -65,7 +71,7 @@ def install_iptables():
             os.system('yum update&&yum install -y iptables')
         else:
             os.system('apt-get update&&apt-get install -y iptables')
-        status = subprocess.getstatusoutput('iptables -V')  # 使用 subprocess
+        status = subprocess.getstatusoutput('iptables -V')
         if status[1] != '':
             print('已完成安装iptables')
             input('按任意键继续')
@@ -86,8 +92,7 @@ def get_host_ip():
     return ip
 
 # 添加iptables端口转发
-def add_forward():
-
+def add_forward(): 
     forward_ip = input('输入本地ip(回车自动获取):') or get_host_ip()
     print(forward_ip)
 
@@ -102,7 +107,8 @@ def add_forward():
 
     forward_type = input('请输入数字 来选择 iptables 转发类型(默认TCP+UDP):\n1.TCP\n2.UDP\n3.TCP+UDP\n') or '3'
 
-    while forward_type == '1' or '2' or '3':
+    # 修复无限循环问题
+    while True:
         if forward_type == '1':
             os.system(
                 'iptables -t nat -A PREROUTING -p tcp -m tcp --dport ' + forward_port + ' -j DNAT --to-destination ' + forwarded_ip + ':' + forwarded_port + '&&'
@@ -122,15 +128,17 @@ def add_forward():
             break
         else:
             forward_type = input('输入错误!!!\n请再次输入数字 来选择 iptables 转发类型(默认TCP+UDP):\n1.TCP\n2.UDP\n3.TCP+UDP\n') or '3'
+    
     choice = input('是否需要继续添加y/n(默认y):') or 'y'
     run()
     if choice == 'y':
         add_forward()
     else:
         restart_program()
+
 # 清空iptables端口转发
 def del_all_forwarding():
-    num = subprocess.getstatusoutput('iptables -t nat -vnL POSTROUTING')  # 使用 subprocess
+    num = subprocess.getstatusoutput('iptables -t nat -vnL POSTROUTING')
     all_num = num[1].count('*')/2
     a = 0
     while a < all_num:
@@ -147,13 +155,14 @@ def del_all_forwarding():
 
 # 查看iptables端口转发
 def view_forwarding():
-    show = subprocess.getoutput('iptables -t nat -vnL POSTROUTING')  # 使用 subprocess
+    show = subprocess.getoutput('iptables -t nat -vnL POSTROUTING')
     print(show+'\n以上是你现有的规则')
     input('按任意键回到主菜单')
     restart_program()
+
 #删除iptables端口转发
 def del_forwarding():
-    show = subprocess.getoutput('iptables -t nat -vnL POSTROUTING')  # 使用 subprocess
+    show = subprocess.getoutput('iptables -t nat -vnL POSTROUTING')
     print(show + '\n以上是你现有的规则')
     input('按任意键继续')
     if show == 'Chain POSTROUTING (policy ACCEPT 460 packets, 28030 bytes)\npkts bytes target prot opt in out source destination':
@@ -161,7 +170,7 @@ def del_forwarding():
         restart_program()
     else:
         no = input('你想删除的规则序号(如1,2,3,4):')
-        output = subprocess.getoutput('iptables -t nat -D POSTROUTING '+no+'&&iptables -t nat -D PREROUTING '+no)  # 使用 subprocess
+        output = subprocess.getoutput('iptables -t nat -D POSTROUTING '+no+'&&iptables -t nat -D PREROUTING '+no)
         if output == 'iptables: Bad rule (does a matching rule exist in that chain?).':
             input('你还没有添加规则或是没有输入序号,按任意键回到主菜单')
             restart_program()
