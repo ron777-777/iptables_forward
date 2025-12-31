@@ -13,7 +13,7 @@ This is a script for iptables_forward.
     
   返回python 3.x.x使用  
     
-  `wget -N --no-check-certificate https://raw.githubusercontent.com/ron777-777/iptables_forward/master/python3_iptables_forward.py&&python python3_iptables_forward.py`  
+  `wget -N --no-check-certificate https://raw.githubusercontent.com/ron777-777/iptables_forward/master/python3_iptables_forward.py&&python3 python3_iptables_forward.py`  
     
   本脚本支持CentOS,Ubuntu,Debian  
     
